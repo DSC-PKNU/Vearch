@@ -1,7 +1,9 @@
 # Vearch
 
-- 크롬 브라우저를 위한 확장 프로그램입니다. 
-![screenshot](https://www.notion.so/image/https%3A%2F%2Fs3-us-west-2.amazonaws.com%2Fsecure.notion-static.com%2F78f9f90f-d8d1-44f1-94da-bd96f0ee09ae%2FUntitled.png?table=block&id=b548d41a-93ab-413e-a67a-ca1310cf5863&width=1920&userId=2164ceb4-3a97-4cea-8fef-125742fd8f86&cache=v2)
+## 🔎Vearch = Video + Search
+- 동영상 내 키워드 검색을 가능하게 하는 크롬 확장 프로그램입니다. 
+- 웹에서 재생되는 동영상의 오디오를 추출하여 STT 변환 후, 키워드의 등장 시간과 횟수를 한 눈에 볼 수 있습니다.
+![image](https://user-images.githubusercontent.com/49135657/105623345-5ae6a800-5e5c-11eb-9168-42e182ee150d.png)
 ---
 
 ## Features
