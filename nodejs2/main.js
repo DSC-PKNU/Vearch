@@ -18,7 +18,7 @@ const app = http.createServer((request, response)=>{
             var filename = link.slice(-11);
             var output_path = `./files/youtubedl/${filename}.m4a`;
             
-            const audio = youtubedl(link, ['-f', 'bestaudio', '-o', output_path, '-x', '--audio-format', 'm4a'], {});
+            const audio = youtubedl(link, ['-f', 'bestaudio', '-x', '--audio-format', 'm4a'], {});
 
             audio.on('info', function(info){
                 console.log('Download started');
