@@ -1,10 +1,8 @@
 const http  = require('http');
-const fs = require('fs');
-const url = require('url');
-const formidable = require('formidable');
 const qs = require('querystring');
-const youtubedl = require('youtube-dl')
-
+const youtubedl = require('youtube-dl');
+const youtube = require('./youtubedl.js');
+const fs = require('fs');
 
 const app = http.createServer((request, response)=>{
 
@@ -16,16 +14,22 @@ const app = http.createServer((request, response)=>{
         request.on('end', ()=>{
             var post = qs.parse(body);
             var link = post.link;
+            
+            var filename = link.slice(-11);
+            var output_path = `./files/youtubedl/${filename}.m4a`;
+            
+            const audio = youtubedl(link, ['-f', 'bestaudio', '-o', output_path, '-x', '--audio-format', 'm4a'], {});
+
+            audio.on('info', function(info){
+                console.log('Download started');
+                console.log('filename: '+info._filename);
+                console.log('size: '+info.size);
+            });
+            
+            audio.pipe(fs.createWriteStream(output_path));
+
             response.writeHead(200);
             response.end(`<h1>success</h1>${link}`); 
-            
-            var url = link;
-            var filename = link.slice(-11);
-            var output_path = `./files/${filename}.m4a`;
-            youtubedl.exec(url, ['-f', 'bestaudio', '-o', output_path, '-x', '--audio-format', 'm4a'], {}, function(err, output) {
-                if (err) throw err;
-                console.log(output.join('\n'));
-              });
         });
         
     } else { // 기본 페이지

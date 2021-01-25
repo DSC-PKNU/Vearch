@@ -1,3 +1,4 @@
+// google speech to text api 사용, 음성인식 테스트
 
 async function syncRecognize(
   filename,

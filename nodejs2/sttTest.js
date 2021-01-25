@@ -1,3 +1,5 @@
+// ETRI STT 모델 사용, 음성인식 테스트
+
 
 var fs = require('fs');
 var openApiURL = 'http://aiopen.etri.re.kr:8000/WiseASR/Recognition';
