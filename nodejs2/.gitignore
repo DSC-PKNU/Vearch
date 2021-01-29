@@ -1,6 +1,7 @@
 node_modules
 dist/*
 *.log
+d3ab76cd8454.json
 
 # node_modules => node_modules 디렉토리를 무시한다. 즉, 하위 모든 리소스를 무시한다. 
 # app/dist/* => app 디렉토리 안의 dist 디렉토리의 하위 모든 리소스를 무시한다. 
