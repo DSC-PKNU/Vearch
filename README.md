@@ -15,6 +15,7 @@
 - STT(Speech To Text) 알고리즘으로 음성정보를 문자로 변환
 - 변환된 문자로 자막 생성
 - 동영상 내 키워드 검색 기능
+- testtest
 
 ## Installation
 
