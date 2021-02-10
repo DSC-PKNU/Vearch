@@ -1,7 +1,6 @@
 const http  = require('http');
 const qs = require('querystring');
 const youtubedl = require('youtube-dl');
-const youtube = require('./youtubedl.js');
 const fs = require('fs');
 
 const app = http.createServer((request, response)=>{
@@ -18,18 +17,50 @@ const app = http.createServer((request, response)=>{
             var filename = link.slice(-11);
             var output_path = `./files/youtubedl/${filename}.m4a`;
             
-            const audio = youtubedl(link, ['-f', 'bestaudio', '-x', '--audio-format', 'm4a'], {});
+            // const audio = youtubedl(link, ['-f', 'bestaudio', '-x', '--audio-format', 'm4a'], {});
 
-            audio.on('info', function(info){
-                console.log('Download started');
-                console.log('filename: '+info._filename);
-                console.log('size: '+info.size);
-            });
+            // audio.on('info', function(info){
+            //     console.log('Download started');
+            //     console.log('filename: '+info._filename);
+            //     console.log('size: '+info.size);
+            // });
+
+            // audio.pipe(fs.createWriteStream(output_path));
+
+            new Promise((r1, r2) => {
+                audio = youtubedl(link, ['-f', 'bestaudio', '-x', '--audio-format', 'm4a'], {});
+                r1();
+            }).then(() => {
+                audio.on('info', function(info){
+                    console.log('Download started');
+                    console.log('filename: '+info._filename);
+                    console.log('size: '+info.size);
+                });
+            }).then(() => {
+                audio.pipe(fs.createWriteStream(output_path));
+            }).then(() => {
+                response.writeHead(200);
+                response.end(`<h1>success</h1>${link}`); 
+            })
             
-            audio.pipe(fs.createWriteStream(output_path));
 
-            response.writeHead(200);
-            response.end(`<h1>success</h1>${link}`); 
+            
+            // new Promise((r1, r2) => {
+            //     const audio = youtubedl(link, ['-f', 'bestaudio', '-x', '--audio-format', 'm4a'], {});
+                
+            //     audio.on('info', function(info){
+            //         console.log('Download started');
+            //         console.log('filename: '+info._filename);
+            //         console.log('size: '+info.size);
+            //     });
+
+            //     audio.pipe(fs.createWriteStream(output_path));
+
+            //     r1();
+            // }).then(() => {
+            //     response.writeHead(200);
+            //     response.end(`<h1>success</h1>${link}`); 
+            // })
         });
         
     } else { // 기본 페이지
