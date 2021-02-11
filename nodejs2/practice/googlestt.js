@@ -36,4 +36,4 @@ async function syncRecognize(
   console.log(`Transcription: ${transcription}`); 
 }
 
-syncRecognize('./files/wJ_JfMeHsvU.wav', 'LINEAR16', 16000, 'ko-KR');
+syncRecognize('./files/youtubedl/vPorpg7Xdh8.wav', 'LINEAR16', 44100, 'ko-KR');
