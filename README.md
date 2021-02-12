@@ -26,10 +26,13 @@
 사용방법
 
 ## Members
+
 **Chrome extensions**
 ![박정빈](https://github.com/JeongbinPark)
+
 **Back-end (Node.js)**
 ![최대윤](https://github.com/Yoon6)
+
 **Google Cloud Speech API**
 ![황서영](https://github.com/dancing1emon)
 
