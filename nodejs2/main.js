@@ -2,6 +2,13 @@ const http  = require('http');
 const qs = require('querystring');
 const youtubedl = require('youtube-dl');
 const fs = require('fs');
+const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
+const ffprobePath = require('@ffprobe-installer/ffprobe').path;
+const ffmpeg = require('fluent-ffmpeg');
+ffmpeg.setFfmpegPath(ffmpegPath);
+ffmpeg.setFfprobePath(ffprobePath);
+const gstt = require('./googlestt.js');
+
 
 const app = http.createServer((request, response)=>{
 
@@ -17,6 +24,7 @@ const app = http.createServer((request, response)=>{
             var filename = link.slice(-11);
             var output_path = `./files/youtubedl/${filename}.m4a`;
             
+
             const audio = youtubedl(link, ['-f', 'bestaudio', '-x', '--audio-format', 'm4a'], {});
 
             audio.on('info', function(info){
@@ -27,8 +35,30 @@ const app = http.createServer((request, response)=>{
 
             audio.pipe(fs.createWriteStream(output_path));
 
-            // response.writeHead(200);
-            // response.end(`<h1>success</h1>${link}`); 
+           
+            setTimeout(()=>{
+                ffmpeg(`./files/youtubedl/${filename}.m4a`)
+                .toFormat('wav')
+                .audioChannels(1)
+                .on('error', (err) => {
+                    console.log('An error occurred: ' + err.message);
+                })
+                .on('progress', (progress) => {
+                    // console.log(JSON.stringify(progress));
+                    console.log('Processing: ' + progress.targetSize + ' KB converted');
+                })
+                .on('end', () => {
+                    console.log('Processing finished !');
+                })
+                .save(`./files/youtubedl/${filename}.wav`);//path where you want to save your file
+            }, 5000);
+
+            setTimeout(()=>{
+                gstt.stt(`./files/youtubedl/${filename}.wav`, 'LINEAR16', 44100, 'ko-KR')
+                response.writeHead(200);
+                response.end(`<h1>success</h1>${link}`); 
+            }, 5000);
+            
 
             // new Promise((r1, r2) => {
             //     audio = youtubedl(link, ['-f', 'bestaudio', '-x', '--audio-format', 'm4a'], {});

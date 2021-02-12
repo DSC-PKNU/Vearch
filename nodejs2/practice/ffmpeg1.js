@@ -4,8 +4,8 @@ const ffmpeg = require('fluent-ffmpeg');
 ffmpeg.setFfmpegPath(ffmpegPath);
 ffmpeg.setFfprobePath(ffprobePath);
 
-const filename = 'vPorpg7Xdh8'
-let audio = `./files/youtubedl/${filename}.m4a`;
+const filename = 'wJ_JfMeHsvU'
+let audio = `../files/youtubedl/${filename}.m4a`;
 
 ffmpeg(audio)
 .toFormat('wav')
@@ -20,4 +20,4 @@ ffmpeg(audio)
 .on('end', () => {
     console.log('Processing finished !');
 })
-.save(`./files/youtubedl/${filename}.wav`);//path where you want to save your file
+.save(`../files/youtubedl/${filename}.wav`);//path where you want to save your file
