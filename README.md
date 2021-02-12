@@ -1,4 +1,5 @@
 # Vearch
+## Google Developer Student Clubs
 
 ## 🔎Vearch = Video + Search
 - 동영상 내 키워드 검색을 가능하게 하는 크롬 확장 프로그램입니다. 
@@ -15,7 +16,6 @@
 - STT(Speech To Text) 알고리즘으로 음성정보를 문자로 변환
 - 변환된 문자로 자막 생성
 - 동영상 내 키워드 검색 기능
-- testtest
 
 ## Installation
 
@@ -24,6 +24,14 @@
 ## Usage
 
 사용방법
+
+## Members
+### Chrome extensions
+![박정빈](https://github.com/JeongbinPark)
+### Back-end (Node.js)
+![최대윤](https://github.com/Yoon6)
+### Google Cloud Speech API
+![황서영](https://github.com/dancing1emon)
 
 ## License
 
