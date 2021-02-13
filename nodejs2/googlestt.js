@@ -35,6 +35,7 @@ module.exports = {
     const [response] = await operation.promise();
     const transcription = response.results.map(result => result.alternatives[0].transcript).join('\n');
     console.log(`Transcription: ${transcription}`); 
+
   }
 }
 // syncRecognize('./files/youtubedl/vPorpg7Xdh8.wav', 'LINEAR16', 44100, 'ko-KR');
