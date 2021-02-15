@@ -62,6 +62,11 @@ const app = http.createServer((request, response)=>{
             var filename = link.slice(-11);
             var output_path = `./files/youtubedl/${filename}.m4a`;
             
+            /**
+             * youtube-dl 라이브러리 사용
+             * 다운로드 하는 부분
+             * 동기 처리 필요
+             */
 
             const audio = youtubedl(link, ['-f', 'bestaudio', '-x', '--audio-format', 'm4a'], {});
 
@@ -73,11 +78,16 @@ const app = http.createServer((request, response)=>{
 
             audio.pipe(fs.createWriteStream(output_path));
 
-           
+            /**
+             * ffmpeg 라이브러리 사용
+             * wav, mono, 16000 변환
+             * 
+             */
             setTimeout(()=>{
                 ffmpeg(`./files/youtubedl/${filename}.m4a`)
                 .toFormat('wav')
                 .audioChannels(1)
+                .audioFrequency(16000)
                 .on('error', (err) => {
                     console.log('An error occurred: ' + err.message);
                 })
@@ -92,15 +102,17 @@ const app = http.createServer((request, response)=>{
             }, 5000);
 
 
+            /**
+             * Google Speech API 
+             */
             setTimeout(()=>{
-               console.log(`before : ${transcript}`);
-
-                syncRecognize(`./files/youtubedl/${filename}.wav`, 'LINEAR16', 44100, 'ko-KR');
-    
-                console.log(`after : ${transcript}`);
-
+                syncRecognize(`./files/youtubedl/${filename}.wav`, 'LINEAR16', 16000, 'ko-KR');
             }, 10*1000);
 
+            /**
+             * 화면 표시, 스크립트 표시
+             * 위의 작업들이 끝나면 표시 되도록 동기처리 필요
+             */
             setTimeout(()=>{
                 linkScript = `
                 <!DOCTYPE html>
