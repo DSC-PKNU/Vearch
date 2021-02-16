@@ -16,30 +16,23 @@ var transcript = '';
  */
 
 /**
- * gc speech api
+ * gc speech api + time stamp
  */
-async function asyncRecognizeGCS(
+async function asyncRecognizeGCSWords(
     gcsUri,
     encoding,
     sampleRateHertz,
     languageCode
-    ) {
-    // [START speech_transcribe_async_gcs]
+  ) {
+    // [START speech_transcribe_async_word_time_offsets_gcs]
     // Imports the Google Cloud client library
     const speech = require('@google-cloud/speech');
   
     // Creates a client
     const client = new speech.SpeechClient();
   
-    /**
-     * TODO(developer): Uncomment the following lines before running the sample.
-     */
-    // const gcsUri = 'gs://my-bucket/audio.raw';
-    // const encoding = 'Encoding of the audio file, e.g. LINEAR16';
-    // const sampleRateHertz = 16000;
-    // const languageCode = 'BCP-47 language code, e.g. en-US';
-  
     const config = {
+      enableWordTimeOffsets: true,
       encoding: encoding,
       sampleRateHertz: sampleRateHertz,
       languageCode: languageCode,
@@ -57,15 +50,31 @@ async function asyncRecognizeGCS(
     // Detects speech in the audio file. This creates a recognition job that you
     // can wait for now, or get its result later.
     const [operation] = await client.longRunningRecognize(request);
+  
     // Get a Promise representation of the final result of the job
     const [response] = await operation.promise();
-    const transcription = response.results
-      .map(result => result.alternatives[0].transcript)
-      .join('\n');
-    console.log(`Transcription: ${transcription}`);
+    response.results.forEach(result => {
 
-    transcript = transcription;
-    // [END speech_transcribe_async_gcs]
+        console.log(`Transcription: ${result.alternatives[0].transcript}`);
+        transcript += `${result.alternatives[0].transcript}` + '<br><br>';
+
+        result.alternatives[0].words.forEach(wordInfo => {
+            // NOTE: If you have a time offset exceeding 2^32 seconds, use the
+            // wordInfo.{x}Time.seconds.high to calculate seconds.
+            const startSecs =
+            `${wordInfo.startTime.seconds}` +
+            '.' +
+            wordInfo.startTime.nanos / 100000000;
+            const endSecs =
+            `${wordInfo.endTime.seconds}` +
+            '.' +
+            wordInfo.endTime.nanos / 100000000;
+            console.log(`Word: ${wordInfo.word}`);
+            console.log(`\t ${startSecs} secs - ${endSecs} secs`);
+        });
+
+    });
+    // [END speech_transcribe_async_word_time_offsets_gcs]
 }
 
 /**
@@ -170,7 +179,7 @@ const app = http.createServer((request, response)=>{
              * Google Speech API 
              */
             setTimeout(()=>{
-                asyncRecognizeGCS(`gs://audio_vearch/${filename}.wav`, 'LINEAR16', 16000, 'ko-KR');
+                asyncRecognizeGCSWords(`gs://audio_vearch/${filename}.wav`, 'LINEAR16', 16000, 'ko-KR');
             }, 10*1000);
 
             /**
@@ -193,45 +202,12 @@ const app = http.createServer((request, response)=>{
                 </body>
                 </html>
                 `
+                transcript='';
+                console.log(`transcript init : ${transcript}`);
+                
                 response.writeHead(200);
                 response.end(linkScript); 
             }, 40*1000);
-            
-
-            // new Promise((r1, r2) => {
-            //     audio = youtubedl(link, ['-f', 'bestaudio', '-x', '--audio-format', 'm4a'], {});
-            //     r1();
-            // }).then(() => {
-            //     audio.on('info', function(info){
-            //         console.log('Download started');
-            //         console.log('filename: '+info._filename);
-            //         console.log('size: '+info.size);
-            //     });
-            // }).then(() => {
-            //     audio.pipe(fs.createWriteStream(output_path));
-            // }).then(() => {
-            //     response.writeHead(200);
-            //     response.end(`<h1>success</h1>${link}`); 
-            // })
-            
-
-            
-            // new Promise((r1, r2) => {
-            //     const audio = youtubedl(link, ['-f', 'bestaudio', '-x', '--audio-format', 'm4a'], {});
-                
-            //     audio.on('info', function(info){
-            //         console.log('Download started');
-            //         console.log('filename: '+info._filename);
-            //         console.log('size: '+info.size);
-            //     });
-
-            //     audio.pipe(fs.createWriteStream(output_path));
-
-            //     r1();
-            // }).then(() => {
-            //     response.writeHead(200);
-            //     response.end(`<h1>success</h1>${link}`); 
-            // })
         });
         
     } else { // 기본 페이지
