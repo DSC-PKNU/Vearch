@@ -1,5 +1,5 @@
 
-function main(
+function gcs_upload(
     bucketName,
     filename,
     destination
@@ -37,6 +37,6 @@ function main(
   
     uploadFile().catch(console.error);
     // [END storage_upload_file]
-  }
+}
   
-main('audio-vearch', '/nodejs2/files/youtubedl/aGa7FozbbNV.wav', 'aGa7FozbbNV.wav');
+main('audio_vearch', '../nodejs2/files/youtubedl/IYeZT5tKs9w.wav', 'IYeZT5tKs9w.wav');
