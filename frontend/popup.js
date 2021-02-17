@@ -9,8 +9,8 @@ window.onload = () =>{
 
     if(this.state.value === "create"){
       //parsing video ID
-      const reg = /[a-z0-9A-Z]*(?=\?|$)/;
-      const videoID = reg.exec(this.link.value)[0];
+      const reg = /^.*(?:(?:youtu\.be\/|v\/|vi\/|u\/\w\/|embed\/)|(?:(?:watch)?\?v(?:i)?=|\&v(?:i)?=))([^#\&\?]*).*/;
+      const videoID = reg.exec(this.link.value)[1];
       chrome.storage.local.set({'videoID' : videoID}, () => {
         console.log('videoID is ', videoID);
       });
