@@ -120,8 +120,6 @@ function gcs_upload(
     uploadFile().catch(console.error);
     // [END storage_upload_file]
 }
-var filename = '';
-var output_path = '';
 
 const app = http.createServer((request, response)=>{
 
@@ -133,7 +131,8 @@ const app = http.createServer((request, response)=>{
         request.on('end', ()=>{
             var post = qs.parse(body);
             var link = post.link;
-            
+            var rx = /^.*(?:(?:youtu\.be\/|v\/|vi\/|u\/\w\/|embed\/)|(?:(?:watch)?\?v(?:i)?=|\&v(?:i)?=))([^#\&\?]*).*/;
+            var filename = link.match(rx)[1];
             /**
              * youtube-dl 라이브러리 사용
              * 다운로드 하는 부분
@@ -145,14 +144,10 @@ const app = http.createServer((request, response)=>{
             audio.on('info', function(info){
                 console.log('Download started');
                 console.log('filename: '+info._filename);
-                filename = info._filename.slice(-15,-4);
-                console.log(filename);
                 console.log('size: '+info.size);
             });
 
-            setTimeout(()=>{
-                audio.pipe(fs.createWriteStream(`./files/youtubedl/${filename}.m4a`));
-            }, 5*1000);
+            audio.pipe(fs.createWriteStream(`./files/youtubedl/${filename}.m4a`));
 
             /**
              * ffmpeg 라이브러리 사용
@@ -175,7 +170,7 @@ const app = http.createServer((request, response)=>{
                     console.log('Processing finished !');
                 })
                 .save(`./files/youtubedl/${filename}.wav`);//path where you want to save your file
-            }, 15*1000);
+            }, 30*1000);
 
             /**
              * Google Cloud Storage upload
