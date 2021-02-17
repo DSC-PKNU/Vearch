@@ -8,6 +8,7 @@ const ffmpeg = require('fluent-ffmpeg');
 ffmpeg.setFfmpegPath(ffmpegPath);
 ffmpeg.setFfprobePath(ffprobePath);
 var transcript = '';
+var timestamp = '';
 
 /**
  * 1분 이상의 음성파일
@@ -22,7 +23,8 @@ async function asyncRecognizeGCSWords(
     gcsUri,
     encoding,
     sampleRateHertz,
-    languageCode
+    languageCode,
+    filename
   ) {
     // [START speech_transcribe_async_word_time_offsets_gcs]
     // Imports the Google Cloud client library
@@ -61,16 +63,21 @@ async function asyncRecognizeGCSWords(
         result.alternatives[0].words.forEach(wordInfo => {
             // NOTE: If you have a time offset exceeding 2^32 seconds, use the
             // wordInfo.{x}Time.seconds.high to calculate seconds.
+            
             const startSecs =
             `${wordInfo.startTime.seconds}` +
             '.' +
             wordInfo.startTime.nanos / 100000000;
+
             const endSecs =
             `${wordInfo.endTime.seconds}` +
             '.' +
             wordInfo.endTime.nanos / 100000000;
-            console.log(`Word: ${wordInfo.word}`);
-            console.log(`\t ${startSecs} secs - ${endSecs} secs`);
+
+            timestamp += `<br><a href='https://www.youtube.com/watch?v=${filename}&t=${startSecs}s'>${startSecs}</a>초 : ${wordInfo.word}`;
+
+            console.log(`${startSecs}초 : ${wordInfo.word}`); 
+            // console.log(`\t ${startSecs} secs - ${endSecs} secs`);
         });
 
     });
@@ -165,7 +172,7 @@ const app = http.createServer((request, response)=>{
                     console.log('Processing finished !');
                 })
                 .save(`./files/youtubedl/${filename}.wav`);//path where you want to save your file
-            }, 5*1000);
+            }, 15*1000);
 
             /**
              * Google Cloud Storage upload
@@ -173,14 +180,14 @@ const app = http.createServer((request, response)=>{
 
             setTimeout(()=>{
                 gcs_upload('audio_vearch', `./files/youtubedl/${filename}.wav`, `${filename}.wav`);
-            }, 10*1000);
+            }, 30*1000);
 
             /**
              * Google Speech API 
              */
             setTimeout(()=>{
-                asyncRecognizeGCSWords(`gs://audio_vearch/${filename}.wav`, 'LINEAR16', 16000, 'ko-KR');
-            }, 10*1000);
+                asyncRecognizeGCSWords(`gs://audio_vearch/${filename}.wav`, 'LINEAR16', 16000, 'ko-KR', filename);
+            }, 40*1000);
 
             /**
              * 화면 표시, 스크립트 표시
@@ -198,16 +205,21 @@ const app = http.createServer((request, response)=>{
                 </head>
                 <body>
                     <h1>success</h1>
+                    <h2>transciption</h2>
                     ${transcript}
+                    <h2>time line</h2>
+                    ${timestamp}
+
                 </body>
                 </html>
                 `
                 transcript='';
-                console.log(`transcript init : ${transcript}`);
+                timestamp='';
+                // console.log(`transcript init : ${transcript}`);
                 
                 response.writeHead(200);
                 response.end(linkScript); 
-            }, 40*1000);
+            }, 100*1000);
         });
         
     } else { // 기본 페이지
