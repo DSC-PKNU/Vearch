@@ -120,6 +120,8 @@ function gcs_upload(
     uploadFile().catch(console.error);
     // [END storage_upload_file]
 }
+var filename = '';
+var output_path = '';
 
 const app = http.createServer((request, response)=>{
 
@@ -132,24 +134,25 @@ const app = http.createServer((request, response)=>{
             var post = qs.parse(body);
             var link = post.link;
             
-            var filename = link.slice(-11);
-            var output_path = `./files/youtubedl/${filename}.m4a`;
-            
             /**
              * youtube-dl 라이브러리 사용
              * 다운로드 하는 부분
              * 동기 처리 필요
-             */
-
+             */            
+            
             const audio = youtubedl(link, ['-f', 'bestaudio', '-x', '--audio-format', 'm4a'], {});
 
             audio.on('info', function(info){
                 console.log('Download started');
                 console.log('filename: '+info._filename);
+                filename = info._filename.slice(-15,-4);
+                console.log(filename);
                 console.log('size: '+info.size);
             });
 
-            audio.pipe(fs.createWriteStream(output_path));
+            setTimeout(()=>{
+                audio.pipe(fs.createWriteStream(`./files/youtubedl/${filename}.m4a`));
+            }, 5*1000);
 
             /**
              * ffmpeg 라이브러리 사용
