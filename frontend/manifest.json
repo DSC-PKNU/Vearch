@@ -1,0 +1,28 @@
+{
+  "manifest_version" : 2,
+  "name" : "Vearch",
+  "description" : "Searching words in video",
+  "version" : "1.0.0",
+
+  "browser_action" : {
+    "default_icon" : "images/icon.png",
+    "default_popup" : "popup.html"
+  },
+
+  "commands" : {
+    "_execute_browser_action" : {
+      "suggested_key" : {
+        "default" : "Ctrl+Shift+F",
+        "mac" : "MacCtrl+Shift+F"
+      }
+    }
+  },
+
+  "permissions" : [   
+    "tabs",
+    "http://localhost/*",
+    "<all_urls>",
+    "contextMenus",
+    "storage"
+  ]
+}

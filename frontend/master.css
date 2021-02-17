@@ -1,0 +1,119 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  width: 350px;
+  min-height: 700px;
+}
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+.line {
+  display: inline-block;
+  position: absolute;
+  z-index: 1;
+  background-color: #e4e8eb;
+}
+.hor {
+  height: 1px;
+  width: 100%;
+}
+.ver {
+  width: 1px;
+  height: 100%;
+}
+
+#i_keyword {
+  left: 92px;
+  margin: 25px 0px;
+  height: 355px;
+}
+
+.title {
+  height: 60px;
+}
+.title h1 {
+  display: inline-block;
+  margin: 0;
+}
+#icon {
+  width: 60px;
+  height: 60px;
+  float: left;
+  background: url(./images/icon.png) center no-repeat;
+  background-size: 40px 40px;
+}
+#logo {
+  width: 120px;
+  height: 40px;
+  float: left;
+  background-image: url(./images/logo.png);
+  background-size: 120px 40px;
+}
+#setting {
+  width: 40px;
+  height: 40px;
+  float: right;
+  background-image: url(./images/setting.png);
+  background-size: 40px 40px;
+}
+
+#videoDiv {
+  height: 250px;
+  flex-direction: column;
+}
+#videoInputBar > #videoSrc {
+  width: 80%;
+  display: none;
+}
+#videoSrc > h4 {
+  margin: 5px;
+}
+
+.inputBox {
+  display: flex;
+  justify-content: center;
+  height: 40px;
+  padding: 8px;
+}
+.inputBox input {
+  display: inline-block;
+  margin-right: -1px;
+  width: 80%;
+}
+.inputBox button {
+  width: 20%;
+}
+
+#videoContainer {
+  margin: 10px;
+  height: 200px;
+  background-color: #aaaaaa;
+}
+#video {
+  width: 330px;
+  height: 200px;
+}
+
+#contents {
+  padding-left: 15px;
+}
+
+.keywordListsComponent div {
+  display: inline-block;
+}
+#keywordLists {
+  height: 350px;
+  overflow-y: auto;
+}
+.timestamp {
+  width: 20%;
+  margin-right: 5%;
+  vertical-align: top;
+}
+.keyword {
+  width: 70%;
+}

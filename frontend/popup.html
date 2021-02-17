@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="./master.css" />
+    <script src="./popup.js"></script>
+  </head>
+  <body>
+    <div class="title">
+      <h1 id="icon"></h1>
+      <h1 id="logo"></h1>
+      <h1 id="setting"></h1>
+    </div>
+    <i class="line hor"></i>
+    <div id="videoDiv">
+      <div id="videoContainer">
+        <iframe id="video"></iframe>
+      </div>
+      <div>
+        <form action="" method="post" id="videoInputBar" class="inputBox">
+          <input id="videoInput" name="link" type="text" placeholder="Video Source">
+          <a id="videoSrc"><h4></h4></a>
+          <button id="videoSrc_button" type="submit" name="state" value="create">create</button>
+        </form>
+      </div>
+    </div>
+    <i class="line hor"></i>
+    <div>
+      <form action="" method="post"  id="searchBar" class="inputBox">
+        <input id="search_input" name="keyword" type="text" placeholder="Search Keyword">
+        <button id="search_button" type="submit" name="button" >Search</button>
+      </form>
+    </div>
+    <i class="line ver" id="i_keyword"></i>
+    <div id="contents">
+      <div class="keywordListsComponent">
+        <div class="timestamp">timestamp</div>
+        <div class="keyword">keyword</div>
+        <ul id="keywordLists">
+        </ul>
+      </div>
+    </div>
+  </body>
+</html>
