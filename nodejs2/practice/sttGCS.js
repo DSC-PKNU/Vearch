@@ -48,5 +48,5 @@ async function asyncRecognizeGCS(
 }
 
 
-const gcsUri = 'gs://audio_vearch/IYeZT5tKs9w.wav';
+const gcsUri = 'gs://audio_vearch/9PhObN4CYrA.wav';
 asyncRecognizeGCS(gcsUri, 'LINEAR16', 16000, 'ko-KR');

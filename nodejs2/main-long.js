@@ -8,6 +8,7 @@ const ffmpeg = require('fluent-ffmpeg');
 ffmpeg.setFfmpegPath(ffmpegPath);
 ffmpeg.setFfprobePath(ffprobePath);
 var transcript = '';
+var timestamp = '';
 
 /**
  * 1분 이상의 음성파일
@@ -16,30 +17,24 @@ var transcript = '';
  */
 
 /**
- * gc speech api
+ * gc speech api + time stamp
  */
-async function asyncRecognizeGCS(
+async function asyncRecognizeGCSWords(
     gcsUri,
     encoding,
     sampleRateHertz,
-    languageCode
-    ) {
-    // [START speech_transcribe_async_gcs]
+    languageCode,
+    filename
+  ) {
+    // [START speech_transcribe_async_word_time_offsets_gcs]
     // Imports the Google Cloud client library
     const speech = require('@google-cloud/speech');
   
     // Creates a client
     const client = new speech.SpeechClient();
   
-    /**
-     * TODO(developer): Uncomment the following lines before running the sample.
-     */
-    // const gcsUri = 'gs://my-bucket/audio.raw';
-    // const encoding = 'Encoding of the audio file, e.g. LINEAR16';
-    // const sampleRateHertz = 16000;
-    // const languageCode = 'BCP-47 language code, e.g. en-US';
-  
     const config = {
+      enableWordTimeOffsets: true,
       encoding: encoding,
       sampleRateHertz: sampleRateHertz,
       languageCode: languageCode,
@@ -57,15 +52,36 @@ async function asyncRecognizeGCS(
     // Detects speech in the audio file. This creates a recognition job that you
     // can wait for now, or get its result later.
     const [operation] = await client.longRunningRecognize(request);
+  
     // Get a Promise representation of the final result of the job
     const [response] = await operation.promise();
-    const transcription = response.results
-      .map(result => result.alternatives[0].transcript)
-      .join('\n');
-    console.log(`Transcription: ${transcription}`);
+    response.results.forEach(result => {
 
-    transcript = transcription;
-    // [END speech_transcribe_async_gcs]
+        console.log(`Transcription: ${result.alternatives[0].transcript}`);
+        transcript += `${result.alternatives[0].transcript}` + '<br><br>';
+
+        result.alternatives[0].words.forEach(wordInfo => {
+            // NOTE: If you have a time offset exceeding 2^32 seconds, use the
+            // wordInfo.{x}Time.seconds.high to calculate seconds.
+            
+            const startSecs =
+            `${wordInfo.startTime.seconds}` +
+            '.' +
+            wordInfo.startTime.nanos / 100000000;
+
+            const endSecs =
+            `${wordInfo.endTime.seconds}` +
+            '.' +
+            wordInfo.endTime.nanos / 100000000;
+
+            timestamp += `<br><a href='https://www.youtube.com/watch?v=${filename}&t=${startSecs}s'>${startSecs}</a>초 : ${wordInfo.word}`;
+
+            console.log(`${startSecs}초 : ${wordInfo.word}`); 
+            // console.log(`\t ${startSecs} secs - ${endSecs} secs`);
+        });
+
+    });
+    // [END speech_transcribe_async_word_time_offsets_gcs]
 }
 
 /**
@@ -115,16 +131,14 @@ const app = http.createServer((request, response)=>{
         request.on('end', ()=>{
             var post = qs.parse(body);
             var link = post.link;
-            
-            var filename = link.slice(-11);
-            var output_path = `./files/youtubedl/${filename}.m4a`;
-            
+            var rx = /^.*(?:(?:youtu\.be\/|v\/|vi\/|u\/\w\/|embed\/)|(?:(?:watch)?\?v(?:i)?=|\&v(?:i)?=))([^#\&\?]*).*/;
+            var filename = link.match(rx)[1];
             /**
              * youtube-dl 라이브러리 사용
              * 다운로드 하는 부분
              * 동기 처리 필요
-             */
-
+             */            
+            
             const audio = youtubedl(link, ['-f', 'bestaudio', '-x', '--audio-format', 'm4a'], {});
 
             audio.on('info', function(info){
@@ -133,7 +147,7 @@ const app = http.createServer((request, response)=>{
                 console.log('size: '+info.size);
             });
 
-            audio.pipe(fs.createWriteStream(output_path));
+            audio.pipe(fs.createWriteStream(`./files/youtubedl/${filename}.m4a`));
 
             /**
              * ffmpeg 라이브러리 사용
@@ -156,7 +170,7 @@ const app = http.createServer((request, response)=>{
                     console.log('Processing finished !');
                 })
                 .save(`./files/youtubedl/${filename}.wav`);//path where you want to save your file
-            }, 5*1000);
+            }, 30*1000);
 
             /**
              * Google Cloud Storage upload
@@ -164,14 +178,14 @@ const app = http.createServer((request, response)=>{
 
             setTimeout(()=>{
                 gcs_upload('audio_vearch', `./files/youtubedl/${filename}.wav`, `${filename}.wav`);
-            }, 10*1000);
+            }, 30*1000);
 
             /**
              * Google Speech API 
              */
             setTimeout(()=>{
-                asyncRecognizeGCS(`gs://audio_vearch/${filename}.wav`, 'LINEAR16', 16000, 'ko-KR');
-            }, 10*1000);
+                asyncRecognizeGCSWords(`gs://audio_vearch/${filename}.wav`, 'LINEAR16', 16000, 'ko-KR', filename);
+            }, 40*1000);
 
             /**
              * 화면 표시, 스크립트 표시
@@ -189,49 +203,21 @@ const app = http.createServer((request, response)=>{
                 </head>
                 <body>
                     <h1>success</h1>
+                    <h2>transciption</h2>
                     ${transcript}
+                    <h2>time line</h2>
+                    ${timestamp}
+
                 </body>
                 </html>
                 `
+                transcript='';
+                timestamp='';
+                // console.log(`transcript init : ${transcript}`);
+                
                 response.writeHead(200);
                 response.end(linkScript); 
-            }, 40*1000);
-            
-
-            // new Promise((r1, r2) => {
-            //     audio = youtubedl(link, ['-f', 'bestaudio', '-x', '--audio-format', 'm4a'], {});
-            //     r1();
-            // }).then(() => {
-            //     audio.on('info', function(info){
-            //         console.log('Download started');
-            //         console.log('filename: '+info._filename);
-            //         console.log('size: '+info.size);
-            //     });
-            // }).then(() => {
-            //     audio.pipe(fs.createWriteStream(output_path));
-            // }).then(() => {
-            //     response.writeHead(200);
-            //     response.end(`<h1>success</h1>${link}`); 
-            // })
-            
-
-            
-            // new Promise((r1, r2) => {
-            //     const audio = youtubedl(link, ['-f', 'bestaudio', '-x', '--audio-format', 'm4a'], {});
-                
-            //     audio.on('info', function(info){
-            //         console.log('Download started');
-            //         console.log('filename: '+info._filename);
-            //         console.log('size: '+info.size);
-            //     });
-
-            //     audio.pipe(fs.createWriteStream(output_path));
-
-            //     r1();
-            // }).then(() => {
-            //     response.writeHead(200);
-            //     response.end(`<h1>success</h1>${link}`); 
-            // })
+            }, 100*1000);
         });
         
     } else { // 기본 페이지
