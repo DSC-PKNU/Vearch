@@ -14,6 +14,9 @@ var timestamp = '';
  * 1분 이상의 음성파일
  * Flow
  * youtube-dl => ffmpeg => gc storage upload => gc speech api 
+ * 
+ * auth setting
+ * google cloud shell `export GOOGLE_APPLICATION_CREDENTIALS="d3ab76cd8454.json"`
  */
 
 /**
@@ -170,7 +173,7 @@ const app = http.createServer((request, response)=>{
                     console.log('Processing finished !');
                 })
                 .save(`./files/youtubedl/${filename}.wav`);//path where you want to save your file
-            }, 30*1000);
+            }, 15*1000);
 
             /**
              * Google Cloud Storage upload
