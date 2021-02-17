@@ -145,7 +145,7 @@ app.get('/', (req, res) => {
                     <input name="link">
                 </div>
                 <br>
-                <button type="submit">Send my names</button>
+                <button type="submit">Send</button>
             </form>
         </body>
         </html>
