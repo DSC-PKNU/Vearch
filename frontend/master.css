@@ -26,6 +26,13 @@ ul {
   height: 100%;
 }
 
+#i_search {
+  height: 25px;
+  margin: 3px;
+  width: 2px;
+  background-color: black;
+}
+
 #i_keyword {
   left: 92px;
   margin: 25px 0px;
@@ -33,40 +40,25 @@ ul {
 }
 
 .title {
-  height: 40px;
+  height: 50px;
 }
 .title h1 {
   display: inline-block;
   margin: 0;
 }
-#icon {
-  margin-left: 10px;
-  width: 30px;
-  height: 30px;
-  float: left;
-  background: url(./images/icon.png) center no-repeat;
-  background-size: 30px 30px;
-}
 #logo {
-  margin-left: 10px;
-  margin-top: 2px;
-  width: 120px;
-  height: 30px;
+  width: 200px;
+  height: 50px;
   float: left;
   background-image: url(./images/logo.png);
-  background-size: 120px 30px;
-}
-#setting {
-  width: 40px;
-  height: 40px;
-  float: right;
-  background-image: url(./images/setting.png);
-  background-size: 40px 40px;
+  background-size: 200px 50px;
+  cursor: pointer;
 }
 
 #videoDiv {
-  height: 250px;
+  height: 220px;
   flex-direction: column;
+  line-height: 1;
 }
 #videoInputBar > #videoSrc {
   width: 80%;
@@ -79,30 +71,77 @@ ul {
 .inputBox {
   display: flex;
   justify-content: center;
-  height: 40px;
-  padding: 8px;
+  height: 35px;
+  margin: 5px 0 10px 0;
+}
+.inputBox > div {
+  border: 2px solid black;
+  border-radius: 35px;
+  padding-left: 15px;
+  width: 95%;
 }
 .inputBox input {
   display: inline-block;
-  margin-right: -1px;
-  width: 80%;
+  border: none;
+  width: 85%;
+  height: 30px;
+}
+.inputBox input:focus {
+  outline: none;
 }
 .inputBox button {
   width: 20%;
 }
 
+#output {
+  border: 0px;
+  padding: 0;
+  height: 0px;
+}
+
 #videoContainer {
-  margin: 10px;
   height: 200px;
+  margin: 0px 10px;
   background-color: #aaaaaa;
 }
+#blankVideo {
+  cursor: pointer;
+}
+#icon {
+  width: 140px;
+  height: 160px;
+  margin: auto;
+  background: url(./images/icon.png) center no-repeat;
+  background-size: 140px 140px;
+}
+#clickText {
+  text-align: center;
+  font-size: 16px;
+  font-family: arial;
+  font-weight: bold;
+  color: #eeeeee;
+  margin-top: 5px;
+}
+
 #video {
   width: 330px;
   height: 200px;
+  display: none;
 }
 
 #contents {
   padding-left: 15px;
+}
+
+#search_icon {
+  width: 30px;
+  height: 30px;
+  background: url(./images/search_icon.png) center no-repeat;
+  background-size: 20px 20px;
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 10px;
+  cursor: pointer;
 }
 
 .keywordListsComponent div {
@@ -116,6 +155,7 @@ ul {
   width: 20%;
   margin-right: 5%;
   vertical-align: top;
+  cursor: pointer;
 }
 .keyword {
   width: 70%;

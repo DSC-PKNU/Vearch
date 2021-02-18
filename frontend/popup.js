@@ -1,48 +1,57 @@
 const url = "http://192.168.50.179:3002";
 
 window.onload = () =>{
-  const videoSrcForm = document.getElementById("videoInputBar");
   const keywordSearchForm = document.getElementById("searchBar");
+  const blankVideo =  document.getElementById("blankVideo");
+  const logo =  document.getElementById("logo");
+  const search_icon =  document.getElementById("search_icon");
+  const search_input =  document.getElementById("search_input");
 
-  videoSrcForm.addEventListener('submit', function(e){
-    e.preventDefault();
+  //create video and script
+  blankVideo.addEventListener('click', function(){
+    const pasteText = document.querySelector("#output");
+    pasteText.focus();
+    document.execCommand('paste');
+    let videoLink = pasteText.value;
 
-    if(this.state.value === "create"){
-      //parsing video ID
-      const reg = /^.*(?:(?:youtu\.be\/|v\/|vi\/|u\/\w\/|embed\/)|(?:(?:watch)?\?v(?:i)?=|\&v(?:i)?=))([^#\&\?]*).*/;
-      const videoID = reg.exec(this.link.value)[1];
-      chrome.storage.local.set({'videoID' : videoID}, () => {
-        console.log('videoID is ', videoID);
+    //should check if the pasted text is valid
+    //parsing video ID
+    const reg = /^.*(?:(?:youtu\.be\/|v\/|vi\/|u\/\w\/|embed\/)|(?:(?:watch)?\?v(?:i)?=|\&v(?:i)?=))([^#\&\?]*).*/;
+    const videoID = reg.exec(videoLink)[1];
+
+    chrome.storage.local.set({'videoID' : videoID}, () => {
+      console.log('videoID is ', videoID);
+    });
+
+    //check state and change tags
+    changeTags("create", videoID); 
+
+    //get Script from server and make list tags  
+    (async() => {
+      const scriptsJson = await getScriptData(videoID);
+
+      //save script data in storage for searching keyword
+      chrome.storage.local.set({'videoScript' : scriptsJson}, () => {
+        console.log('script is ', scriptsJson);
       });
 
-      //check state and change tags
-      changeTags(this.state.value, videoID); 
-  
-      //get Script from server and make list tags  
-      (async() => {
-        const scriptsJson = await getScriptData(videoID);
+      //make script list tags
+      makeScriptList(scriptsJson.scripts);
+    })();
+  })
 
-        //save script data in storage for searching keyword
-        chrome.storage.local.set({'videoScript' : scriptsJson}, () => {
-          console.log('script is ', scriptsJson);
-        });
-
-        //make script list tags
-        makeScriptList(scriptsJson.scripts);
-      })();
-    }
-    else {
-      chrome.storage.local.clear();
-      changeTags(this.state.value); 
-      removeScriptList();
-    }
-  });
+  //remove video and script
+  logo.addEventListener('click', function(){
+    changeTags("delete"); 
+    chrome.storage.local.clear();
+    removeScriptList();
+  })
 
   //choose 'submit' or 'onChange'
   //do not need to submit because there's the script in storage
-  keywordSearchForm.addEventListener('submit', function(e){
+  search_icon.addEventListener('click', function(e){
     e.preventDefault();
-    const keyword = this.keyword.value;
+    const keyword = search_input.value;
 
     console.log("what you typed : ", keyword);
 
@@ -76,30 +85,19 @@ window.onload = () =>{
 
 //change tag's attributes depending on the state of button ('create' or 'delete')
 const changeTags = (state, videoID = '') => {
-  const input = document.getElementById("videoInput");
-  const videoSrc_button = document.getElementById("videoSrc_button");
-  const videoSrc = document.getElementById("videoSrc");
-  const videoSrcText = videoSrc.getElementsByTagName("h4")[0];
   const video = document.getElementById("video");
+  const blankVideo = document.getElementById("blankVideo");
 
   if(state === "create"){
-    let src = `https://youtube.com/${videoID}`;
     let srcEmbed = `https://youtube.com/embed/${videoID}`;
-    videoSrcText.innerText = src;
-      
-    input.style.display = "none";
-    videoSrc_button.value = "delete";
-    videoSrc_button.innerText = "delete";
-    videoSrc.style.display = "inline";
 
+    blankVideo.style.display = "none";
+    video.style.display = "inline";
     video.setAttribute('src', srcEmbed);
   }
   else{
-    input.style.display = "inline-block";
-    videoSrc_button.value = "create";
-    videoSrc_button.innerText = "create";
-    videoSrc.style.display = "none";
-    input.value = "";
+    blankVideo.style.display = "block";
+    video.style.display = "none";
     video.removeAttribute('src');
   }
 }
