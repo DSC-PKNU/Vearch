@@ -5,8 +5,6 @@ const fs = require('fs');
 const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 const ffprobePath = require('@ffprobe-installer/ffprobe').path;
 const ffmpeg = require('fluent-ffmpeg');
-const { resolve } = require('path');
-const { reject } = require('async');
 ffmpeg.setFfmpegPath(ffmpegPath);
 ffmpeg.setFfprobePath(ffprobePath);
 var transcript = '';
@@ -84,8 +82,7 @@ async function asyncRecognizeGCSWords(
 
             timestamp += `<br><a href='https://www.youtube.com/watch?v=${filename}&t=${startSecs}s'>${startSecs}</a>초 : ${wordInfo.word}`;
 
-            console.log(`${startSecs}초 : ${wordInfo.word}`); 
-            scriptArray.push({timestamp: startSecs , script: wordInfo.word});
+            // console.log(`${startSecs}초 : ${wordInfo.word}`); 
             // console.log(`\t ${startSecs} secs - ${endSecs} secs`);
         });
 
@@ -97,39 +94,39 @@ async function asyncRecognizeGCSWords(
  * gcs upload
  */
 async function gcs_upload(
-  bucketName,
-  filename,
-  destination
-) {
-  // [START storage_upload_file]
-
-  // Imports the Google Cloud client library
-  const {Storage} = require('@google-cloud/storage');
-
-  // Creates a client
-  const storage = new Storage({
-      keyFilename: "d3ab76cd8454.json"
-    });
-
-  async function uploadFile() {
-    // Uploads a local file to the bucket
-    await storage.bucket(bucketName).upload(filename, {
-      // By setting the option `destination`, you can change the name of the
-      destination: destination,
-      // object you are uploading to a bucket.
-      metadata: {
-        // Enable long-lived HTTP caching headers
-        // Use only if the contents of the file will never change
-        // (If the contents will change, use cacheControl: 'no-cache')
-        cacheControl: 'public, max-age=31536000',
-      },
-    });
-
-    console.log(`${filename} uploaded to ${bucketName}.`);
-  }
-
-  await uploadFile().catch(console.error);
-  // [END storage_upload_file]
+    bucketName,
+    filename,
+    destination
+  ) {
+    // [START storage_upload_file]
+  
+    // Imports the Google Cloud client library
+    const {Storage} = require('@google-cloud/storage');
+  
+    // Creates a client
+    const storage = new Storage({
+        keyFilename: "d3ab76cd8454.json"
+      });
+  
+    async function uploadFile() {
+      // Uploads a local file to the bucket
+      await storage.bucket(bucketName).upload(filename, {
+        // By setting the option `destination`, you can change the name of the
+        destination: destination,
+        // object you are uploading to a bucket.
+        metadata: {
+          // Enable long-lived HTTP caching headers
+          // Use only if the contents of the file will never change
+          // (If the contents will change, use cacheControl: 'no-cache')
+          cacheControl: 'public, max-age=31536000',
+        },
+      });
+  
+      console.log(`${filename} uploaded to ${bucketName}.`);
+    }
+  
+    await uploadFile().catch(console.error);
+    // [END storage_upload_file]
 }
 
 const app = http.createServer((request, response)=>{
@@ -139,8 +136,8 @@ const app = http.createServer((request, response)=>{
         request.on('data', (data)=>{
             body+=data;
         });
-        request.on('end', async()=>{
-            var post = JSON.parse(body);
+        request.on('end', ()=>{
+            var post = qs.parse(body);
             var link = post.link;
             var rx = /^.*(?:(?:youtu\.be\/|v\/|vi\/|u\/\w\/|embed\/)|(?:(?:watch)?\?v(?:i)?=|\&v(?:i)?=))([^#\&\?]*).*/;
             var filename = link.match(rx)[1];
@@ -149,69 +146,68 @@ const app = http.createServer((request, response)=>{
              * 다운로드 하는 부분
              * 동기 처리 필요
              */            
-            await new Promise((resolve, reject) => {
-              const audio = youtubedl(link, ['-f', 'bestaudio', '-x', '--audio-format', 'm4a'], {});
+            async function run(){
+                await new Promise((resolve, reject) => {
+                    const audio = youtubedl(link, ['-f', 'bestaudio', '-x', '--audio-format', 'm4a'], {});
+    
+                    if(!audio) return reject(new Error('Audio is Empty!'));
+    
+                    audio.on('error', reject);
+        
+                    audio.on('info', function(info){
+                        console.log('Download started');
+                        console.log('filename: '+info._filename);
+                        console.log('size: '+info.size);
+                    });
+        
+                    audio.pipe(fs.createWriteStream(`./files/youtubedl/${filename}.m4a`));
+                    
+                    audio.on('end', function(){
+                    resolve(true);
+                    })
+                });
+    
+                /**
+                 * ffmpeg 라이브러리 사용
+                 * wav, mono, 16000 변환
+                 * 
+                 */
+                await new Promise((resolve, reject) => {
+                    ffmpeg(`./files/youtubedl/${filename}.m4a`)
+                    .toFormat('wav')
+                    .audioChannels(1)
+                    .audioFrequency(16000)
+                    .on('error', (err) => {
+                        console.log('An error occurred: ' + err.message);
+                        reject(err);
+                    })
+                    .on('progress', (progress) => {
+                        // console.log(JSON.stringify(progress));
+                        console.log('Processing: ' + progress.targetSize + ' KB converted');
+                    })
+                    .on('end', () => {
+                        console.log('Processing finished !');
+                        resolve();
+                    })
+                    .save(`./files/youtubedl/${filename}.wav`);//path where you want to save your file
+                });
+                
+    
+                /**
+                 * Google Cloud Storage upload
+                 */
+                await gcs_upload('audio_vearch', `./files/youtubedl/${filename}.wav`, `${filename}.wav`);
+                
+    
+                /**
+                 * Google Speech API 
+                 */
+                await asyncRecognizeGCSWords(`gs://audio_vearch/${filename}.wav`, 'LINEAR16', 16000, 'ko-KR', filename);
 
-              if(!audio) return reject(new Error('Audio is Empty!'));
-
-              audio.on('error', reject);
-  
-              audio.on('info', function(info){
-                  console.log('Download started');
-                  console.log('filename: '+info._filename);
-                  console.log('size: '+info.size);
-              });
-  
-              audio.pipe(fs.createWriteStream(`./files/youtubedl/${filename}.m4a`));
-              
-              audio.on('end', function(){
-                resolve(true);
-              })
-            })
-
-            /**
-             * ffmpeg 라이브러리 사용
-             * wav, mono, 16000 변환
-             * 
-             */
-             await new Promise((resolve, reject) => {
-                ffmpeg(`./files/youtubedl/${filename}.m4a`)
-                .toFormat('wav')
-                .audioChannels(1)
-                .audioFrequency(16000)
-                .on('error', (err) => {
-                    console.log('An error occurred: ' + err.message);
-                    reject(err);
-                })
-                .on('progress', (progress) => {
-                    // console.log(JSON.stringify(progress));
-                    console.log('Processing: ' + progress.targetSize + ' KB converted');
-                })
-                .on('end', () => {
-                    console.log('Processing finished !');
-                    resolve();
-                })
-                .save(`./files/youtubedl/${filename}.wav`);//path where you want to save your file
-              });
-            
-
-            /**
-             * Google Cloud Storage upload
-             */
-            await gcs_upload('audio_vearch', `./files/youtubedl/${filename}.wav`, `${filename}.wav`);
-           
-
-            /**
-             * Google Speech API 
-             */
-            await asyncRecognizeGCSWords(`gs://audio_vearch/${filename}.wav`, 'LINEAR16', 16000, 'ko-KR', filename);
-            
-
-            /**
-             * 화면 표시, 스크립트 표시
-             * 위의 작업들이 끝나면 표시 되도록 동기처리 필요
-             */
-            /* setTimeout(()=>{
+                /**
+                 * 화면 표시, 스크립트 표시
+                 * 위의 작업들이 끝나면 표시 되도록 동기처리 필요
+                 */
                 linkScript = `
                 <!DOCTYPE html>
                 <html lang="en">
@@ -236,13 +232,9 @@ const app = http.createServer((request, response)=>{
                 // console.log(`transcript init : ${transcript}`);
 
                 response.writeHead(200);
-                response.end(JSON.stringify({scripts: scriptArray})); 
-            }, 100*1000); */
-            console.log("finished");
-            response.writeHead(200);
-            response.end(JSON.stringify({scripts: scriptArray})); 
-            scriptArray = [];
-            console.log(JSON.stringify({scripts: scriptArray}));
+                response.end(linkScript); 
+            }
+            run();
         });
         
     } else { // 기본 페이지
@@ -270,4 +262,4 @@ const app = http.createServer((request, response)=>{
 
 });
 
-app.listen(8080);
+app.listen(3001);
