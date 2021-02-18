@@ -37,7 +37,7 @@
 **4. 구글 클라우드 인증 키 설정**
   - 본인 클라우드 계정 필요
   - 인증키 `.json` 받은 후
-  - 문서 참조하여 `GOOGLE_APPLICATION_CREDENTIALS` 환경변수 설정
+  - [문서](https://cloud.google.com/docs/authentication/getting-started) 참조하여 `GOOGLE_APPLICATION_CREDENTIALS` 환경변수 설정
 
 **5. `Vearch/nodejs2/main-long_promise.js` 실행**
   ```bash
@@ -52,12 +52,18 @@
 ## Usage
 
 **1. 확장 프로그램 다운로드**
+  - [다운로드](https://drive.google.com/file/d/1IDAQMQAoe3UupcF-jF0xO4EUwquzoAd8/view?usp=sharing)
 
 **2. 크롬 브라우저 `chrome://extensions` 접속**
 
 **3. 개발자모드 켜고, 압축해제된 확장프로램 추가**
 
+![image](https://user-images.githubusercontent.com/49135657/108422140-80a77700-7279-11eb-8fad-31db77cdefd1.png)
+
+
 **4. 유튜브 링크 복사 후, 확장 프로그램 실행**
+
+![image](https://user-images.githubusercontent.com/49135657/108422238-9f0d7280-7279-11eb-911d-6a2a50eee808.png)
 
 ## Members
 
