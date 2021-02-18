@@ -1,0 +1,270 @@
+const http  = require('http');
+const qs = require('querystring');
+const youtubedl = require('youtube-dl');
+const fs = require('fs');
+const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
+const ffprobePath = require('@ffprobe-installer/ffprobe').path;
+const ffmpeg = require('fluent-ffmpeg');
+const { resolve } = require('path');
+const { reject } = require('async');
+ffmpeg.setFfmpegPath(ffmpegPath);
+ffmpeg.setFfprobePath(ffprobePath);
+var transcript = '';
+var timestamp = '';
+let scriptArray = [];
+
+/**
+ * 1분 이상의 음성파일
+ * Flow
+ * youtube-dl => ffmpeg => gc storage upload => gc speech api 
+ * 
+ * auth setting
+ * google cloud shell `export GOOGLE_APPLICATION_CREDENTIALS="d3ab76cd8454.json"`
+ */
+
+/**
+ * gc speech api + time stamp
+ */
+async function asyncRecognizeGCSWords(
+    gcsUri,
+    encoding,
+    sampleRateHertz,
+    languageCode,
+    filename
+  ) {
+    // [START speech_transcribe_async_word_time_offsets_gcs]
+    // Imports the Google Cloud client library
+    const speech = require('@google-cloud/speech');
+  
+    // Creates a client
+    const client = new speech.SpeechClient();
+  
+    const config = {
+      enableWordTimeOffsets: true,
+      encoding: encoding,
+      sampleRateHertz: sampleRateHertz,
+      languageCode: languageCode,
+    };
+  
+    const audio = {
+      uri: gcsUri,
+    };
+  
+    const request = {
+      config: config,
+      audio: audio,
+    };
+  
+    // Detects speech in the audio file. This creates a recognition job that you
+    // can wait for now, or get its result later.
+    const [operation] = await client.longRunningRecognize(request);
+  
+    // Get a Promise representation of the final result of the job
+    const [response] = await operation.promise();
+    response.results.forEach(result => {
+
+        console.log(`Transcription: ${result.alternatives[0].transcript}`);
+        transcript += `${result.alternatives[0].transcript}` + '<br><br>';
+
+        result.alternatives[0].words.forEach(wordInfo => {
+            // NOTE: If you have a time offset exceeding 2^32 seconds, use the
+            // wordInfo.{x}Time.seconds.high to calculate seconds.
+            
+            const startSecs =
+            `${wordInfo.startTime.seconds}` +
+            '.' +
+            wordInfo.startTime.nanos / 100000000;
+
+            const endSecs =
+            `${wordInfo.endTime.seconds}` +
+            '.' +
+            wordInfo.endTime.nanos / 100000000;
+
+            timestamp += `<br><a href='https://www.youtube.com/watch?v=${filename}&t=${startSecs}s'>${startSecs}</a>초 : ${wordInfo.word}`;
+
+            console.log(`${startSecs}초 : ${wordInfo.word}`); 
+            scriptArray.push({timestamp: startSecs , script: wordInfo.word});
+            // console.log(`\t ${startSecs} secs - ${endSecs} secs`);
+        });
+
+    });
+    // [END speech_transcribe_async_word_time_offsets_gcs]
+}
+
+/**
+ * gcs upload
+ */
+function gcs_upload(
+    bucketName,
+    filename,
+    destination
+  ) {
+    return new Promise((resolve, reject) => {
+      // [START storage_upload_file]
+    
+      // Imports the Google Cloud client library
+      const {Storage} = require('@google-cloud/storage');
+    
+      // Creates a client
+      const storage = new Storage();
+    
+      (function uploadFile() {
+        // Uploads a local file to the bucket
+        storage.bucket(bucketName).upload(filename, {
+          // By setting the option `destination`, you can change the name of the
+          destination: destination,
+          // object you are uploading to a bucket.
+          metadata: {
+            // Enable long-lived HTTP caching headers
+            // Use only if the contents of the file will never change
+            // (If the contents will change, use cacheControl: 'no-cache')
+            cacheControl: 'public, max-age=31536000',
+          },
+        },
+        () => {
+          console.log(`${filename} uploaded to ${bucketName}.`);
+          resolve(true);
+          }
+        );
+      })();
+      // [END storage_upload_file]
+  })
+}
+
+const app = http.createServer((request, response)=>{
+
+    if(request.url===`/link`){
+        var body='';
+        request.on('data', (data)=>{
+            body+=data;
+        });
+        request.on('end', async()=>{
+            var post = JSON.parse(body);
+            var link = post.link;
+            var rx = /^.*(?:(?:youtu\.be\/|v\/|vi\/|u\/\w\/|embed\/)|(?:(?:watch)?\?v(?:i)?=|\&v(?:i)?=))([^#\&\?]*).*/;
+            var filename = link.match(rx)[1];
+            /**
+             * youtube-dl 라이브러리 사용
+             * 다운로드 하는 부분
+             * 동기 처리 필요
+             */            
+            await new Promise((resolve, reject) => {
+              const audio = youtubedl(link, ['-f', 'bestaudio', '-x', '--audio-format', 'm4a'], {});
+
+              if(!audio) return reject(new Error('Audio is Empty!'));
+
+              audio.on('error', reject);
+  
+              audio.on('info', function(info){
+                  console.log('Download started');
+                  console.log('filename: '+info._filename);
+                  console.log('size: '+info.size);
+              });
+  
+              audio.pipe(fs.createWriteStream(`./files/youtubedl/${filename}.m4a`));
+              
+              audio.on('end', function(){
+                resolve(true);
+              })
+            })
+
+            /**
+             * ffmpeg 라이브러리 사용
+             * wav, mono, 16000 변환
+             * 
+             */
+             await new Promise((resolve, reject) => {
+                ffmpeg(`./files/youtubedl/${filename}.m4a`)
+                .toFormat('wav')
+                .audioChannels(1)
+                .audioFrequency(16000)
+                .on('error', (err) => {
+                    console.log('An error occurred: ' + err.message);
+                    reject(err);
+                })
+                .on('progress', (progress) => {
+                    // console.log(JSON.stringify(progress));
+                    console.log('Processing: ' + progress.targetSize + ' KB converted');
+                })
+                .on('end', () => {
+                    console.log('Processing finished !');
+                    resolve();
+                })
+                .save(`./files/youtubedl/${filename}.wav`);//path where you want to save your file
+              });
+            
+
+            /**
+             * Google Cloud Storage upload
+             */
+            await gcs_upload('audio_vearch', `./files/youtubedl/${filename}.wav`, `${filename}.wav`);
+           
+
+            /**
+             * Google Speech API 
+             */
+            await asyncRecognizeGCSWords(`gs://audio_vearch/${filename}.wav`, 'LINEAR16', 16000, 'ko-KR', filename);
+            
+
+            /**
+             * 화면 표시, 스크립트 표시
+             * 위의 작업들이 끝나면 표시 되도록 동기처리 필요
+             */
+            /* setTimeout(()=>{
+                linkScript = `
+                <!DOCTYPE html>
+                <html lang="en">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="wresponse.writeHead(200);
+                response.end(mainScript);   idth=device-width, initial-scale=1.0">
+                    <title>Youtube loading</title>
+                </head>
+                <body>
+                    <h1>success</h1>
+                    <h2>transciption</h2>
+                    ${transcript}
+                    <h2>time line</h2>
+                    ${timestamp}
+
+                </body>
+                </html>
+                `
+                transcript='';
+                timestamp='';
+                // console.log(`transcript init : ${transcript}`);
+
+                response.writeHead(200);
+                response.end(JSON.stringify({scripts: scriptArray})); 
+            }, 100*1000); */
+            console.log("finished");
+            response.writeHead(200);
+            response.end(JSON.stringify({scripts: scriptArray})); 
+        });
+        
+    } else { // 기본 페이지
+        let mainScript = `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="wresponse.writeHead(200);
+        response.end(mainScript);   idth=device-width, initial-scale=1.0">
+            <title>Youtube Download</title>
+        </head>
+        <body>
+            <h1>File Upload & Convert</h1>
+            <form action="/link" method="post">
+                <input type="text" name="link"><br>
+                <input type="submit" name="upload">
+            </form>
+        </body>
+        </html>
+        `;
+        response.writeHead(200);
+        response.end(mainScript); 
+    }
+
+});
+
+app.listen(3001);
