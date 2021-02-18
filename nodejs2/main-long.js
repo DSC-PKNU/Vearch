@@ -9,6 +9,7 @@ ffmpeg.setFfmpegPath(ffmpegPath);
 ffmpeg.setFfprobePath(ffprobePath);
 var transcript = '';
 var timestamp = '';
+let scriptArray = [];
 
 /**
  * 1분 이상의 음성파일
@@ -80,6 +81,7 @@ async function asyncRecognizeGCSWords(
             timestamp += `<br><a href='https://www.youtube.com/watch?v=${filename}&t=${startSecs}s'>${startSecs}</a>초 : ${wordInfo.word}`;
 
             console.log(`${startSecs}초 : ${wordInfo.word}`); 
+            scriptArray.push({timestamp: "0.5" , script: wordInfo.word});
             // console.log(`\t ${startSecs} secs - ${endSecs} secs`);
         });
 
@@ -132,7 +134,7 @@ const app = http.createServer((request, response)=>{
             body+=data;
         });
         request.on('end', ()=>{
-            var post = qs.parse(body);
+            var post = JSON.parse(body);
             var link = post.link;
             var rx = /^.*(?:(?:youtu\.be\/|v\/|vi\/|u\/\w\/|embed\/)|(?:(?:watch)?\?v(?:i)?=|\&v(?:i)?=))([^#\&\?]*).*/;
             var filename = link.match(rx)[1];
@@ -217,9 +219,9 @@ const app = http.createServer((request, response)=>{
                 transcript='';
                 timestamp='';
                 // console.log(`transcript init : ${transcript}`);
-                
+
                 response.writeHead(200);
-                response.end(linkScript); 
+                response.end(JSON.stringify({scripts: scriptArray})); 
             }, 100*1000);
         });
         

@@ -1,7 +1,6 @@
-const url = "http://192.168.50.179:3002";
+const url = "http://192.168.50.179:3001";
 
 window.onload = () =>{
-  const keywordSearchForm = document.getElementById("searchBar");
   const blankVideo =  document.getElementById("blankVideo");
   const logo =  document.getElementById("logo");
   const search_icon =  document.getElementById("search_icon");
@@ -28,7 +27,7 @@ window.onload = () =>{
 
     //get Script from server and make list tags  
     (async() => {
-      const scriptsJson = await getScriptData(videoID);
+      const scriptsJson = await getScriptData(videoLink);
 
       //save script data in storage for searching keyword
       chrome.storage.local.set({'videoScript' : scriptsJson}, () => {
@@ -64,12 +63,12 @@ window.onload = () =>{
         //and make a new array to pass for makeScriptList function's parameter
         let newScriptArray = [];
         await scriptArray.forEach (el => {
-          const time = el.time;
+          const time = el.timestamp;
           const script = el.script;
           if(script.indexOf(keyword) != -1){
             newScriptArray.push(
               {
-                time: time,
+                timestamp: time,
                 script : script
               }, 
             )
@@ -103,14 +102,14 @@ const changeTags = (state, videoID = '') => {
 }
 
 //fetch script json data
-const getScriptData = async(videoID) => {
+const getScriptData = async(videoLink) => {
   const response = await fetch(url + '/link', {
     method: "post",
     headers: {
       'Accept': 'application/json',
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({videoID: videoID})
+    body: JSON.stringify({link: videoLink})
   });
   const content = await response.json();
   return content;
@@ -119,7 +118,7 @@ const getScriptData = async(videoID) => {
 //make script lists by json data
 const makeScriptList = (data) => {
   removeScriptList();
-
+  console.log("data", data);
   if(data === null) return new Error("There is no script!");
   let ul = document.getElementById("keywordLists");
 
@@ -127,13 +126,13 @@ const makeScriptList = (data) => {
     let li = document.createElement("li");
     let timestamp = document.createElement("div");
     let keyword = document.createElement("div");
-    timestamp.appendChild(document.createTextNode(el.time));
+    timestamp.appendChild(document.createTextNode(el.timestamp));
     timestamp.setAttribute("class", "timestamp");
     keyword.appendChild(document.createTextNode(el.script));
     keyword.setAttribute("class", "keyword");
 
     timestamp.addEventListener("click", () => {
-      onTimeStampClickHandler(el.time);
+      onTimeStampClickHandler(el.timestamp);
     })
 
     li.appendChild(timestamp);
