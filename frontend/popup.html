@@ -7,27 +7,26 @@
   </head>
   <body>
     <div class="title">
-      <h1 id="icon"></h1>
       <h1 id="logo"></h1>
     </div>
     <i class="line hor"></i>
     <div id="videoDiv">
+      <input id="output">
       <div id="videoContainer">
+        <div id="blankVideo">
+          <h1 id="icon"></h1>
+          <div id="clickText">Copy Youtube URL & Click Here!</div>
+        </div>
         <iframe id="video"></iframe>
       </div>
-      <div>
-        <form action="" method="post" id="videoInputBar" class="inputBox">
-          <input id="videoInput" name="link" type="text" placeholder="Video Source">
-          <a id="videoSrc"><h4></h4></a>
-          <button id="videoSrc_button" type="submit" name="state" value="create">create</button>
-        </form>
-      </div>
     </div>
-    <i class="line hor"></i>
     <div>
       <form action="" method="post"  id="searchBar" class="inputBox">
-        <input id="search_input" name="keyword" type="text" placeholder="Search Keyword">
-        <button id="search_button" type="submit" name="button" >Search</button>
+        <div id="searchBox">
+          <input id="search_input" name="keyword" type="text" placeholder="Search Keyword">
+          <i class="line ver" id="i_search"></i>
+          <span id="search_icon"></span>
+        </div>
       </form>
     </div>
     <i class="line ver" id="i_keyword"></i>

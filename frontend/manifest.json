@@ -23,6 +23,7 @@
     "http://localhost/*",
     "<all_urls>",
     "contextMenus",
-    "storage"
+    "storage",
+    "clipboardRead"
   ]
 }
