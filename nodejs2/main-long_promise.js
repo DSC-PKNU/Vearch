@@ -242,6 +242,8 @@ const app = http.createServer((request, response)=>{
             console.log("finished");
             response.writeHead(200);
             response.end(JSON.stringify({scripts: scriptArray})); 
+            scriptArray = [];
+            console.log(JSON.stringify({scripts: scriptArray}));
         });
         
     } else { // 기본 페이지
