@@ -79,6 +79,13 @@ window.onload = () =>{
         makeScriptList(newScriptArray);
       })();
     })
+  });  
+  
+  window.addEventListener("keydown", e => {
+    if(e.key === "Enter"){
+      e.preventDefault();
+      search_icon.click();
+    }
   });
 }
 
