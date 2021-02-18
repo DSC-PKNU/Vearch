@@ -33,25 +33,28 @@ ul {
 }
 
 .title {
-  height: 60px;
+  height: 40px;
 }
 .title h1 {
   display: inline-block;
   margin: 0;
 }
 #icon {
-  width: 60px;
-  height: 60px;
+  margin-left: 10px;
+  width: 30px;
+  height: 30px;
   float: left;
   background: url(./images/icon.png) center no-repeat;
-  background-size: 40px 40px;
+  background-size: 30px 30px;
 }
 #logo {
+  margin-left: 10px;
+  margin-top: 2px;
   width: 120px;
-  height: 40px;
+  height: 30px;
   float: left;
   background-image: url(./images/logo.png);
-  background-size: 120px 40px;
+  background-size: 120px 30px;
 }
 #setting {
   width: 40px;
