@@ -1,4 +1,4 @@
-const url = "http://192.168.50.179:3001";
+const url = "http://211.213.252.3:8080";
 
 window.onload = () =>{
   const blankVideo =  document.getElementById("blankVideo");

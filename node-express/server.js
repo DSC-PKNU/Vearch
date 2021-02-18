@@ -36,7 +36,9 @@ async function asyncRecognizeGCSWords(
     const speech = require('@google-cloud/speech');
   
     // Creates a client
-    const client = new speech.SpeechClient();
+    const client = new speech.SpeechClient({
+      keyFilename: "d3ab76cd8454.json"
+    });
   
     const config = {
       enableWordTimeOffsets: true,
@@ -105,7 +107,9 @@ function gcs_upload(
       const {Storage} = require('@google-cloud/storage');
     
       // Creates a client
-      const storage = new Storage();
+      const storage = new Storage({
+        keyFilename: "d3ab76cd8454.json"
+      });
     
       (function uploadFile() {
         // Uploads a local file to the bucket
@@ -237,86 +241,9 @@ app.post('/link', (request, response) => {
        * 화면 표시, 스크립트 표시
        */
       console.log("finished");
-      response.send(JSON.stringify({scripts: scriptArray})); 
+      response.writeHead(200);
+      response.end(JSON.stringify({scripts: scriptArray})); 
   });
-    // async function run(){
-
-    //     var body = req.body.link;
-    //     console.log(req.body);
-    //     var post = JSON.parse(body);
-    //     var link = post.link;
-    //     var rx = /^.*(?:(?:youtu\.be\/|v\/|vi\/|u\/\w\/|embed\/)|(?:(?:watch)?\?v(?:i)?=|\&v(?:i)?=))([^#\&\?]*).*/;
-    //     var filename = link.match(rx)[1];
-    //     /**
-    //      * youtube-dl 라이브러리 사용
-    //      * 다운로드 하는 부분
-    //      * 동기 처리 필요
-    //      */            
-    //     await new Promise((resolve, reject) => {
-    //         const audio = youtubedl(link, ['-f', 'bestaudio', '-x', '--audio-format', 'm4a'], {});
-
-    //         if(!audio) return reject(new Error('Audio is Empty!'));
-
-    //         audio.on('error', reject);
-
-    //         audio.on('info', function(info){
-    //             console.log('Download started');
-    //             console.log('filename: '+info._filename);
-    //             console.log('size: '+info.size);
-    //         });
-
-    //         audio.pipe(fs.createWriteStream(`./files/youtubedl/${filename}.m4a`));
-            
-    //         audio.on('end', function(){
-    //         resolve(true);
-    //         })
-    //     });
-
-    //     /**
-    //      * ffmpeg 라이브러리 사용
-    //      * wav, mono, 16000 변환
-    //      * 
-    //      */
-    //     await new Promise((resolve, reject) => {
-    //         ffmpeg(`./files/youtubedl/${filename}.m4a`)
-    //         .toFormat('wav')
-    //         .audioChannels(1)
-    //         .audioFrequency(16000)
-    //         .on('error', (err) => {
-    //             console.log('An error occurred: ' + err.message);
-    //             reject(err);
-    //         })
-    //         .on('progress', (progress) => {
-    //             // console.log(JSON.stringify(progress));
-    //             console.log('Processing: ' + progress.targetSize + ' KB converted');
-    //         })
-    //         .on('end', () => {
-    //             console.log('Processing finished !');
-    //             resolve();
-    //         })
-    //         .save(`./files/youtubedl/${filename}.wav`);//path where you want to save your file
-    //     });
-        
-
-    //     /**
-    //      * Google Cloud Storage upload
-    //      */
-    //     await gcs_upload('audio_vearch', `./files/youtubedl/${filename}.wav`, `${filename}.wav`);
-        
-
-    //     /**
-    //      * Google Speech API 
-    //      */
-    //     await asyncRecognizeGCSWords(`gs://audio_vearch/${filename}.wav`, 'LINEAR16', 16000, 'ko-KR', filename);
-        
-
-    //     /**
-    //      * 화면 표시, 스크립트 표시
-    //      */
-    //     console.log("finished");
-    //     res.send(JSON.stringify({scripts: scriptArray})); 
-    // }
-    // run();
     
 });
 

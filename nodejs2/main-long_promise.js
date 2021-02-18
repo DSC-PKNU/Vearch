@@ -37,7 +37,9 @@ async function asyncRecognizeGCSWords(
     const speech = require('@google-cloud/speech');
   
     // Creates a client
-    const client = new speech.SpeechClient();
+    const client = new speech.SpeechClient({
+      keyFilename: "d3ab76cd8454.json"
+    });
   
     const config = {
       enableWordTimeOffsets: true,
@@ -267,4 +269,4 @@ const app = http.createServer((request, response)=>{
 
 });
 
-app.listen(3001);
+app.listen(8080);
