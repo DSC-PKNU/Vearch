@@ -151,8 +151,11 @@ const removeScriptList = () => {
 
 //play the video at the timestamp
 const onTimeStampClickHandler = (timestamp) => {
+ /* for "00:00" shape
   let time = timestamp.split(":");
-  let seconds = Number(time[0] * 60) + Number(time[1]);
+  let seconds = Number(time[0] * 60) + Number(time[1]); */
+
+  let seconds = Math.floor(Number(timestamp));
   
   chrome.storage.local.get(['videoID'], function(result){
     const videoID = result.videoID;
