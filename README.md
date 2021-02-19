@@ -51,6 +51,8 @@
 
 ## Usage
 
+`2021/02/19 서버 닫힘`
+
 **1. 확장 프로그램 다운로드**
   - [다운로드](https://drive.google.com/file/d/1IDAQMQAoe3UupcF-jF0xO4EUwquzoAd8/view?usp=sharing)
 

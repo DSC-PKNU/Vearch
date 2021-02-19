@@ -1,4 +1,4 @@
-const url = "http://211.213.252.3:8080";
+const url = "http://localhost:8080";
 
 window.onload = () =>{
   const blankVideo =  document.getElementById("blankVideo");

@@ -57,6 +57,7 @@ async function asyncRecognizeGCSWords(
       audio: audio,
     };
   
+    console.log('start speech recognization')
     // Detects speech in the audio file. This creates a recognition job that you
     // can wait for now, or get its result later.
     const [operation] = await client.longRunningRecognize(request);
@@ -84,7 +85,7 @@ async function asyncRecognizeGCSWords(
 
             timestamp += `<br><a href='https://www.youtube.com/watch?v=${filename}&t=${startSecs}s'>${startSecs}</a>초 : ${wordInfo.word}`;
 
-            console.log(`${startSecs}초 : ${wordInfo.word}`); 
+            // console.log(`${startSecs}초 : ${wordInfo.word}`); 
             scriptArray.push({timestamp: startSecs , script: wordInfo.word});
             // console.log(`\t ${startSecs} secs - ${endSecs} secs`);
         });
