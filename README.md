@@ -4,7 +4,6 @@
 ## 🔎Vearch = Video + Search
 - 동영상 내 키워드 검색을 가능하게 하는 크롬 확장 프로그램입니다. 
 - 웹에서 재생되는 동영상의 오디오를 추출하여 STT 변환 후, 키워드의 등장 시간과 횟수를 한 눈에 볼 수 있습니다.
-- 한국어 컨텐츠만 이용가능합니다.
 
 ![Screenshot from 2021-02-19 05-35-45](https://user-images.githubusercontent.com/49135657/108418303-64550b80-7274-11eb-9714-921ce7a0b33a.png)
 ---
@@ -15,6 +14,7 @@
 - Google Cloud STT(Speech To Text)를 이용하여 음성정보를 문자로 변환
 - 변환된 문자로 스크립트 생성
 - 동영상 내 키워드 검색 기능
+- 한국어 컨텐츠만 이용가능합니다.
 
 ## Installation
 
@@ -58,7 +58,7 @@
 
 **2. 크롬 브라우저 `chrome://extensions` 접속**
 
-**3. 개발자모드 켜고, 압축해제된 확장프로램 추가**
+**3. 개발자모드 켠 후, 압축해제된 확장 프로그램 추가**
 
 ![image](https://user-images.githubusercontent.com/49135657/108422140-80a77700-7279-11eb-8fad-31db77cdefd1.png)
 
